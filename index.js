@@ -16,10 +16,10 @@ io.on('connect', function(socket) {
     connectCounter++; 
     console.log('a user connected');
 
-    var userColour = '#' + Math.floor(Math.random()*16777215).toString(16);
+    var colour = '#' + Math.floor(Math.random()*16777215).toString(16);
 
     socket.on('click', (event) => {
-        event.meta = { userColour };
+        event.meta = { colour };
         io.emit('click', event);
     });
 
