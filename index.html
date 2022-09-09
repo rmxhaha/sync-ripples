@@ -13,10 +13,10 @@
 >
 </svg>
 
-<script src="/socket.io/socket.io.js"></script>
+<script src="/ripples/socket.io/socket.io.js"></script>
 <script>
 (function() {
-    const socket = io();
+    const socket = io({ path: "/ripples/socket.io/" });
 
     // SVGs
     const svg = document.getElementsByTagName('svg')[0];
