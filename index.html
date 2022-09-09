@@ -1,4 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1000" height="1000" onclick="svg_click(evt)">
+<html style="width:100%;height:100%;">
+<body style="width:100%;height:100%;margin:0;">
+
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1000" height="1000" onclick="svg_click(evt)"
+    height="100%" width="100%"
+    style="background-color:black"
+>
 </svg>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -13,38 +19,46 @@
 
     function addRipple(cx, cy, color) {
         var circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+
+        // INIT
         circle.setAttributeNS(null, 'cx', cx);
         circle.setAttributeNS(null, 'cy', cy);
         circle.setAttributeNS(null, 'r', 1);
         circle.setAttributeNS(null, 'stroke', color);
         circle.setAttributeNS(null, 'stroke-width', 1);
         circle.setAttributeNS(null, 'fill', 'none');
-
-        circle.spawnTime = new Date();
-        circle.color = color;
+        var s = new Date();
 
         svg.appendChild(circle);
         ripples.push(circle);
-    }
 
-    function step() {
-        ripples.forEach(circle => {
-            var s = circle.spawnTime;
+
+        circle.step = function() {
             var t = new Date();
             var diff = (t - s);
             var r =  diff/10;
             var sw = Math.min(r*2, 500/Math.pow(diff, 0.9));
 
-            if (sw < 0.5) {
-                circle.setAttributeNS(null, 'stroke', 'none');
+            if (diff > 1000) {
+                circle.destruct();
             } else {
-                circle.setAttributeNS(null, 'stroke', circle.color);
+                circle.setAttributeNS(null, 'stroke', color);
                 circle.setAttributeNS(null, 'r', r);
                 circle.setAttributeNS(null, 'stroke-width', sw);
                 circle.setAttributeNS(null, 'opacity', 1 - diff / 1000);
             }
-        });
+        }
 
+        circle.destruct = function() {
+            const idx = ripples.indexOf(circle);
+            if (idx > -1) { ripples.splice(idx, 1); }
+
+            svg.removeChild(circle);
+        }
+    }
+
+    function step() {
+        ripples.forEach(circle => circle.step());
         window.requestAnimationFrame(step);
     }
     window.requestAnimationFrame(step);
@@ -61,7 +75,9 @@
 
     // NETWORK
     socket.on('click', (click) => {
-        console.log(click.meta.userColour)
         addRipple(click.x, click.y, click.meta.userColour);
     });
 </script>
+
+</body>
+</html>
