@@ -11,15 +11,17 @@
 
     var ripples = [];
 
-    function addRipple(cx, cy) {
+    function addRipple(cx, cy, color) {
         var circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
         circle.setAttributeNS(null, 'cx', cx);
         circle.setAttributeNS(null, 'cy', cy);
         circle.setAttributeNS(null, 'r', 1);
-        circle.setAttributeNS(null, 'stroke', 'black');
+        circle.setAttributeNS(null, 'stroke', color);
         circle.setAttributeNS(null, 'stroke-width', 1);
         circle.setAttributeNS(null, 'fill', 'none');
+
         circle.spawnTime = new Date();
+        circle.color = color;
 
         svg.appendChild(circle);
         ripples.push(circle);
@@ -36,7 +38,7 @@
             if (sw < 0.5) {
                 circle.setAttributeNS(null, 'stroke', 'none');
             } else {
-                circle.setAttributeNS(null, 'stroke', 'black');
+                circle.setAttributeNS(null, 'stroke', circle.color);
                 circle.setAttributeNS(null, 'r', r);
                 circle.setAttributeNS(null, 'stroke-width', sw);
                 circle.setAttributeNS(null, 'opacity', 1 - diff / 1000);
@@ -59,6 +61,7 @@
 
     // NETWORK
     socket.on('click', (click) => {
-        addRipple(click.x, click.y);
+        console.log(click.meta.userColour)
+        addRipple(click.x, click.y, click.meta.userColour);
     });
 </script>
