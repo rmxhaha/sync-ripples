@@ -1,8 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1000" height="1000" onclick="svg_click(evt)">
 </svg>
 
+<script src="/socket.io/socket.io.js"></script>
 <script>
-    var s = new Date();
+    var socket = io();
+
+    // SVGs
     var svg = document.getElementsByTagName('svg')[0];
     var pt = svg.createSVGPoint();
 
@@ -42,16 +45,20 @@
 
         window.requestAnimationFrame(step);
     }
+    window.requestAnimationFrame(step);
 
-
+    // ACTIONS
     function svg_click(evt) {
         var e = evt.target;
         var dim = e.getBoundingClientRect();
         var x = evt.clientX - dim.left;
         var y = evt.clientY - dim.top;
 
-        addRipple(x,y);
+        socket.emit('click', { x, y });
     }
 
-    window.requestAnimationFrame(step);
+    // NETWORK
+    socket.on('click', (click) => {
+        addRipple(click.x, click.y);
+    });
 </script>
