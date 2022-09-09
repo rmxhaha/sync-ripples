@@ -1,0 +1,57 @@
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="1000" height="1000" onclick="svg_click(evt)">
+</svg>
+
+<script>
+    var s = new Date();
+    var svg = document.getElementsByTagName('svg')[0];
+    var pt = svg.createSVGPoint();
+
+    var ripples = [];
+
+    function addRipple(cx, cy) {
+        var circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
+        circle.setAttributeNS(null, 'cx', cx);
+        circle.setAttributeNS(null, 'cy', cy);
+        circle.setAttributeNS(null, 'r', 1);
+        circle.setAttributeNS(null, 'stroke', 'black');
+        circle.setAttributeNS(null, 'stroke-width', 1);
+        circle.setAttributeNS(null, 'fill', 'none');
+        circle.spawnTime = new Date();
+
+        svg.appendChild(circle);
+        ripples.push(circle);
+    }
+
+    function step() {
+        ripples.forEach(circle => {
+            var s = circle.spawnTime;
+            var t = new Date();
+            var diff = (t - s);
+            var r =  diff/10;
+            var sw = Math.min(r*2, 500/Math.pow(diff, 0.9));
+
+            if (sw < 0.5) {
+                circle.setAttributeNS(null, 'stroke', 'none');
+            } else {
+                circle.setAttributeNS(null, 'stroke', 'black');
+                circle.setAttributeNS(null, 'r', r);
+                circle.setAttributeNS(null, 'stroke-width', sw);
+                circle.setAttributeNS(null, 'opacity', 1 - diff / 1000);
+            }
+        });
+
+        window.requestAnimationFrame(step);
+    }
+
+
+    function svg_click(evt) {
+        var e = evt.target;
+        var dim = e.getBoundingClientRect();
+        var x = evt.clientX - dim.left;
+        var y = evt.clientY - dim.top;
+
+        addRipple(x,y);
+    }
+
+    window.requestAnimationFrame(step);
+</script>
