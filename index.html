@@ -22,6 +22,19 @@
     const events = [];
     const ripples = {};
 
+    let reverseStart = null;
+    function t() {
+        if (reverseStart) {
+            return reverseStart - (Date.now() - reverseStart);
+        } else {
+            return Date.now();
+        }
+    }
+
+    function reverseTime() {
+        reverseStart = Date.now();
+    }
+
     function syncRipples(ts) {
         const startTs = ts - 1000;
         const endTs = ts + 1000;
@@ -65,10 +78,9 @@
 
 
         circle.step = function() {
-            const t = Date.now();
-            const diff = (t - ts);
+            const diff = (t() - ts);
 
-            if (diff > 1000) {
+            if (diff > 1000 || diff < 0) {
                 circle.destruct();
                 return;
             }
@@ -88,7 +100,7 @@
     }
 
     function step() {
-        syncRipples(Date.now());
+        syncRipples(t());
         for (let idx in ripples) {
             ripples[idx].step();
         }
