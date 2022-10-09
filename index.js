@@ -20,6 +20,7 @@ io.on('connect', function(socket) {
 
     socket.on('click', (event) => {
         event.meta = { colour };
+        event.ts = Date.now();
         io.emit('click', event);
     });
 

@@ -22,7 +22,7 @@
     const svg = document.getElementsByTagName('svg')[0];
     const ripples = [];
 
-    function addRipple(cx, cy, color) {
+    function addRipple(cx, cy, color, ts) {
         const circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
 
         // INIT
@@ -32,15 +32,14 @@
         circle.setAttributeNS(null, 'stroke', color);
         circle.setAttributeNS(null, 'stroke-width', 1);
         circle.setAttributeNS(null, 'fill', 'none');
-        const s = new Date();
 
         svg.appendChild(circle);
         ripples.push(circle);
 
 
         circle.step = function() {
-            const t = new Date();
-            const diff = (t - s);
+            const t = Date.now();
+            const diff = (t - ts);
 
             if (diff > 1000) {
                 circle.destruct();
@@ -78,10 +77,11 @@
 
         socket.emit('click', { x, y });
     };
+    window.socket = socket;
 
     // NETWORK
     socket.on('click', (evt) => {
-        addRipple(evt.x, evt.y, evt.meta.colour);
+        addRipple(evt.x, evt.y, evt.meta.colour, evt.ts);
     });
 })();
 </script>
