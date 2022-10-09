@@ -15,26 +15,53 @@
 
 <script src="/ripples/socket.io/socket.io.js"></script>
 <script>
-(function() {
     const socket = io({ path: "/ripples/socket.io/" });
 
     // SVGs
     const svg = document.getElementsByTagName('svg')[0];
-    const ripples = [];
+    const events = [];
+    const ripples = {};
 
-    function addRipple(cx, cy, color, ts) {
+    function syncRipples(ts) {
+        const startTs = ts - 1000;
+        const endTs = ts + 1000;
+
+        let low = 0;
+        let high = events.length - 1;
+        while (low <= high) {
+            const mid = Math.floor((high + low) / 2);
+            if (events[mid].ts < startTs) { 
+                low = mid + 1;
+            } else {
+                high = mid - 1;
+            }
+        }
+
+        let idx = low;
+        while(idx < events.length && events[idx].ts < endTs) {
+            if (!(idx in ripples)) addRipple(idx);
+            idx ++;
+        }
+    }
+
+    function addRipple(idx) {
+        const evt = events[idx];
+        const cx = evt.x;
+        const cy = evt.y;
+        const colour = evt.meta.colour;
+        const ts = evt.ts;
         const circle = document.createElementNS("http://www.w3.org/2000/svg", 'circle');
 
         // INIT
         circle.setAttributeNS(null, 'cx', cx);
         circle.setAttributeNS(null, 'cy', cy);
         circle.setAttributeNS(null, 'r', 1);
-        circle.setAttributeNS(null, 'stroke', color);
+        circle.setAttributeNS(null, 'stroke', colour);
         circle.setAttributeNS(null, 'stroke-width', 1);
         circle.setAttributeNS(null, 'fill', 'none');
 
         svg.appendChild(circle);
-        ripples.push(circle);
+        ripples[idx] = circle;
 
 
         circle.step = function() {
@@ -48,22 +75,23 @@
 
             const r =  diff/10;
             const sw = Math.min(r*2, 500/Math.pow(diff, 0.9));
-            circle.setAttributeNS(null, 'stroke', color);
+            circle.setAttributeNS(null, 'stroke', colour);
             circle.setAttributeNS(null, 'r', r);
             circle.setAttributeNS(null, 'stroke-width', sw);
             circle.setAttributeNS(null, 'opacity', 1 - diff / 1000);
         }
 
         circle.destruct = function() {
-            const idx = ripples.indexOf(circle);
-            if (idx > -1) { ripples.splice(idx, 1); }
-
+            delete ripples[idx];
             svg.removeChild(circle);
         }
     }
 
     function step() {
-        ripples.forEach(circle => circle.step());
+        syncRipples(Date.now());
+        for (let idx in ripples) {
+            ripples[idx].step();
+        }
         window.requestAnimationFrame(step);
     }
     window.requestAnimationFrame(step);
@@ -81,9 +109,8 @@
 
     // NETWORK
     socket.on('click', (evt) => {
-        addRipple(evt.x, evt.y, evt.meta.colour, evt.ts);
+        events.push(evt);
     });
-})();
 </script>
 
 </body>
